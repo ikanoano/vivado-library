@@ -64,7 +64,8 @@ entity TMDS_Decoder is
       kTimeoutMs : natural := 50; --what is the maximum time interval for a blank to be detected
       kRefClkFrqMHz : natural := 200; --what is the RefClk frequency
       kIDLY_TapValuePs : natural := 78; --delay in ps per tap
-      kIDLY_TapWidth : natural := 5); --number of bits for IDELAYE2 tap counter
+      kIDLY_TapWidth : natural := 5; --number of bits for IDELAYE2 tap counter
+      kInvert : boolean := false);
    Port (
       PixelClk : in std_logic;   --Recovered TMDS clock x1 (CLKDIV)
       SerialClk : in std_logic;  --Recovered TMDS clock x5 (CLK)
@@ -118,7 +119,8 @@ dbg_pBitslip <= pBitslip;
 InputSERDES_X: entity work.InputSERDES
    generic map (
       kIDLY_TapWidth => kIDLY_TapWidth,
-      kParallelWidth => 10 -- TMDS uses 1:10 serialization
+      kParallelWidth => 10, -- TMDS uses 1:10 serialization
+      kInvert        => kInvert
       )
    port map (
       PixelClk => PixelClk,

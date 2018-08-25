@@ -59,7 +59,8 @@ use UNISIM.VComponents.all;
 entity InputSERDES is
    Generic (
       kIDLY_TapWidth : natural := 5;   -- number of bits for IDELAYE2 tap counter
-      kParallelWidth : natural := 10); -- number of parallel bits
+      kParallelWidth : natural := 10;  -- number of parallel bits
+      kInvert        : boolean := false);  -- invert input siganl
    Port (
       PixelClk : in std_logic;   --Recovered TMDS clock x1 (CLKDIV)
       SerialClk : in std_logic;  --Recovered TMDS clock x5 (CLK)
@@ -84,7 +85,7 @@ end InputSERDES;
 
 architecture Behavioral of InputSERDES is
 
-signal sDataIn, sDataInDly, icascade1, icascade2, SerialClkInv : std_logic;
+signal sDataIn, isDataIn, sDataInDly, icascade1, icascade2, SerialClkInv : std_logic;
 signal pDataIn_q : std_logic_vector(13 downto 0); --ISERDESE2 can do 1:14 at most
 begin
 
@@ -97,6 +98,7 @@ InputBuffer: IBUFDS
       I          => sDataIn_p,
       IB         => sDataIn_n,
       O          => sDataIn);
+isDataIn  <= not sDataIn when kInvert else sDataIn;
 
 -- Delay element for phase alignment of serial data
 InputDelay: IDELAYE2
@@ -115,7 +117,7 @@ InputDelay: IDELAYE2
       C                      => PixelClk, -- Clock for control signals (CE,INC...)
       CE                     => pIDLY_CE,
       INC                    => pIDLY_INC,
-      IDATAIN                => sDataIn, -- Driven by IOB
+      IDATAIN                => isDataIn, -- Driven by IOB
       LD                     => pIDLY_LD,
       REGRST                 => '0', --not used in VARIABLE mode
       LDPIPEEN               => '0',
