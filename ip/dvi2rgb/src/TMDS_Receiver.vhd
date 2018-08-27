@@ -39,10 +39,9 @@
 --
 -- Purpose:
 -- This module connects to one TMDS data channel and decodes TMDS data
--- according to DVI specifications. It phase aligns the data channel,
--- deserializes the stream, eliminates skew between data channels and decodes
--- data in the end.
--- sDataIn_p/n -> buffer -> de-serialize -> channel de-skew -> decode -> pData
+-- according to DVI specifications. It phase aligns the data channel and
+-- deserializes the stream.
+-- sDataIn_p/n -> buffer -> de-serialize -> pData
 --  
 -------------------------------------------------------------------------------
 
@@ -78,14 +77,9 @@ entity TMDS_Receiver is
       --Parallel data
       pDataInBnd : out std_logic_vector(9 downto 0);
       
-      -- Channel bonding (three data channels in total)
-      pOtherChVld : in std_logic_vector(1 downto 0);
-      pOtherChRdy : in std_logic_vector(1 downto 0);
-      pMeVld : out std_logic;
-      pMeRdy : out std_logic;
-      
       --Status and debug
       pRst : in std_logic; -- Synchronous reset to restart lock procedure
+      pMeVld : out std_logic;
       dbg_pAlignErr : out std_logic; 
       dbg_pEyeSize : out STD_LOGIC_VECTOR(kIDLY_TapWidth-1 downto 0);
       dbg_pBitslip : out std_logic
@@ -97,7 +91,7 @@ constant kBitslipDelay : natural := 3; --three-period delay after bitslip
 signal pAlignRst, pLockLostRst_n : std_logic; 
 signal pBitslipCnt : natural range 0 to kBitslipDelay - 1 := kBitslipDelay - 1; 
 signal pDataInRaw : std_logic_vector(9 downto 0);
-signal pMeRdy_int, pAligned, pAlignErr_int, pAlignErr_q, pBitslip : std_logic;
+signal pAligned, pAlignErr_int, pAlignErr_q, pBitslip : std_logic;
 signal pIDLY_LD, pIDLY_CE, pIDLY_INC : std_logic;
 signal pIDLY_CNT : std_logic_vector(kIDLY_TapWidth-1 downto 0);
 -- Timeout Counter End
@@ -233,18 +227,8 @@ begin
       end if;
    end if;
 end process BitslipDelay;
-   
--- Channel de-skew (bonding)
-ChannelBondX: entity work.ChannelBond
-   port map (
-      PixelClk => PixelClk,
-      pDataInRaw => pDataInRaw,
-      pMeVld => pAligned,
-      pOtherChVld => pOtherChVld,
-      pOtherChRdy => pOtherChRdy,      
-      pDataInBnd => pDataInBnd,
-      pMeRdy => pMeRdy_int);
 
-pMeRdy <= pMeRdy_int;
+
+pDataInBnd <= pDataInRaw;
 
 end Behavioral;
